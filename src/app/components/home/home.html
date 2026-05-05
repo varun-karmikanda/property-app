@@ -1,7 +1,10 @@
 <section>
   <div class="toolbar">
     <form>
-      <input type="text" placeholder="Filter by city" />
+      <input type="text" placeholder="Filter by city" [formControl]="searchControl" />
+      @if (loading()) {
+      <span>Loading...</span>
+    }
       <button class="primary" type="button">Search</button>
     </form>
     <div class="toolbar-buttons">

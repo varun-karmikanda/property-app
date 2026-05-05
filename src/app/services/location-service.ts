@@ -1,5 +1,6 @@
 import { inject, Injectable, InjectionToken, signal } from '@angular/core';
 import { HousingLocationInfo } from '../models/housing-location-info';
+import { delay, Observable, of } from 'rxjs';
 
 export const BASE_URL = new InjectionToken<string>('base url', {
   providedIn: 'root',
@@ -186,5 +187,13 @@ export class LocationService {
   updateLocation(updatedLocation: HousingLocationInfo) {
     this.location.update(prevLocation => prevLocation.map(location => location.id === updatedLocation.id ? updatedLocation : location));
   }
+
+  search(term: string): Observable<HousingLocationInfo[]> {
+  const filtered = this.location().filter(loc =>
+    loc.city.toLowerCase().includes(term.toLowerCase())
+  );
+
+  return of(filtered).pipe(delay(400));
+}
 
 }

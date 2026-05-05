@@ -1,9 +1,12 @@
-import { Component, computed, inject, linkedSignal, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, linkedSignal, signal } from '@angular/core';
 import { HousingLocation } from '../housing-location/housing-location';
 import { HousingLocationInfo } from '../../models/housing-location-info';
 import { BASE_URL, LocationService } from '../../services/location-service';
 import { MockLocationService } from '../../services/mock-location.service';
 import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { debounceTime, distinctUntilChanged, filter, map, switchMap, tap } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 type HousingLocationData = HousingLocationInfo & {
   selected: boolean;
@@ -11,17 +14,23 @@ type HousingLocationData = HousingLocationInfo & {
 
 @Component({
   selector: 'app-home',
-  imports: [HousingLocation, RouterOutlet],
+  imports: [HousingLocation, RouterOutlet, ReactiveFormsModule],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
 export class Home {
-  locationService: LocationService = inject(LocationService);
-  router = inject(Router)
-  activatedRoute = inject(ActivatedRoute);
-  baseUrl = inject(BASE_URL)
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly locationService = inject(LocationService);
 
-  mode = signal<"normal" | "edit">('normal')
+  readonly searchControl = new FormControl('', { nonNullable: true });
+  readonly searchResults = signal<HousingLocationData[] | null>(null);
+  readonly loading = signal(false);
+
+  readonly router = inject(Router);
+  readonly activatedRoute = inject(ActivatedRoute);
+  readonly baseUrl = inject(BASE_URL);
+
+  readonly mode = signal<'normal' | 'edit'>('normal');
 
   modeStatus = computed(() => {
     return this.mode() === "normal" ? "NORMAL" : "EDIT"
@@ -34,6 +43,29 @@ export class Home {
   //     }))
   //     return viewAllLocations;
   //   });
+
+  ngOnInit() {
+    this.searchControl.valueChanges
+      .pipe(
+        map((value) => value.trim()),
+        debounceTime(300),
+        distinctUntilChanged(),
+        tap((term) => {
+          if (term.length < 3) {
+            this.loading.set(false);
+            this.searchResults.set(null);
+          }
+        }),
+        filter((term) => term.length >= 3),
+        tap(() => this.loading.set(true)),
+        switchMap((term) => this.locationService.search(term)),
+        tap(() => this.loading.set(false)),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe((results) => {
+        this.searchResults.set(results.map((location) => ({ ...location, selected: false })));
+      });
+  }
 
   locationServiceData = linkedSignal<HousingLocationInfo[], HousingLocationData[]>(
     {
@@ -57,8 +89,19 @@ export class Home {
     }
   )
 
-  visibleItems = computed(() => this.locationServiceData().filter(x => !this.locationService.isDeleted(x.id)));
-  selectedCount = computed(() => this.locationServiceData().filter(x => x.selected && !this.locationService.isDeleted(x.id)).length);
+  visibleItems = computed(() => {
+    const search = this.searchResults();
+    const items = search ?? this.locationServiceData();
+
+    return items.filter((x) => !this.locationService.isDeleted(x.id));
+  });
+
+  selectedCount = computed(
+    () =>
+      this.locationServiceData().filter(
+        (x) => x.selected && !this.locationService.isDeleted(x.id)
+      ).length
+  );
   deletedCount = computed(() => this.locationService.getDeletedIds().length);
 
   handleSelectionChange(event: { id: number; selected: boolean }) {
