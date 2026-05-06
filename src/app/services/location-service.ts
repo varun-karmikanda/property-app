@@ -189,11 +189,17 @@ export class LocationService {
   }
 
   search(term: string): Observable<HousingLocationInfo[]> {
-  const filtered = this.location().filter(loc =>
-    loc.city.toLowerCase().includes(term.toLowerCase())
-  );
+    const normalizedTerm = term.trim().toLowerCase();
 
-  return of(filtered).pipe(delay(400));
-}
+    const filtered = this.location().filter((location) => {
+      const searchableText = [location.name, location.city, location.state]
+        .join(' ')
+        .toLowerCase();
+
+      return searchableText.includes(normalizedTerm);
+    });
+
+    return of(filtered).pipe(delay(400));
+  }
 
 }
