@@ -1,6 +1,7 @@
 import { inject, Injectable, InjectionToken, signal } from '@angular/core';
 import { HousingLocationInfo } from '../models/housing-location-info';
-import { delay, Observable, of } from 'rxjs';
+import { catchError, delay, filter, map, Observable, of, tap, throwError } from 'rxjs';
+import { ajax } from 'rxjs/ajax';
 
 export const BASE_URL = new InjectionToken<string>('base url', {
   providedIn: 'root',
@@ -201,5 +202,30 @@ export class LocationService {
 
     return of(filtered).pipe(delay(400));
   }
+
+  // private locationJson$ = ajax({
+  //   url: 'public/location.json',
+  // }).pipe(
+  //   map(httpResponse => httpResponse.response as HousingLocationInfo[]),
+  //   delay(500),
+  //   catchError(() => {
+  //     const newError = new Error("the url is invalid, no resource is found");
+  //     return throwError(() => newError)
+  //   })
+  // );
+
+  // searchLocation(query: string): Observable<HousingLocationInfo[]> {
+  //   const normalizedTerm = query.trim().toLowerCase();
+  //   return this.locationJson$
+  //     .pipe(
+  //       map((locations) => locations.filter((location) => {
+  //         const searchableText = [location.name, location.city, location.state]
+  //         .join(' ')
+  //         .toLowerCase();
+
+  //         return searchableText.includes(normalizedTerm);
+  //       })),
+  //    )
+  // }
 
 }

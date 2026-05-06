@@ -24,7 +24,6 @@ export class Home {
 
   readonly searchControl = new FormControl('', { nonNullable: true });
   readonly searchResults = signal<HousingLocationData[] | null>(null);
-  readonly loading = signal(false);
 
   readonly router = inject(Router);
   readonly activatedRoute = inject(ActivatedRoute);
@@ -33,7 +32,7 @@ export class Home {
   readonly mode = signal<'normal' | 'edit'>('normal');
 
   modeStatus = computed(() => {
-    return this.mode() === "normal" ? "NORMAL" : "EDIT"
+    return this.mode() === 'normal' ? 'NORMAL' : 'EDIT';
   });
 
   // locationServiceData = linkedSignal<HousingLocationData[]>(() => {
@@ -47,47 +46,41 @@ export class Home {
   ngOnInit() {
     this.searchControl.valueChanges
       .pipe(
+        debounceTime(500),
         map((value) => value.trim()),
-        debounceTime(300),
         distinctUntilChanged(),
         tap((term) => {
           if (term.length < 3) {
-            this.loading.set(false);
             this.searchResults.set(null);
           }
         }),
         filter((term) => term.length >= 3),
-        tap(() => this.loading.set(true)),
         switchMap((term) => this.locationService.search(term)),
-        tap(() => this.loading.set(false)),
-        takeUntilDestroyed(this.destroyRef)
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((results) => {
         this.searchResults.set(results.map((location) => ({ ...location, selected: false })));
       });
   }
 
-  locationServiceData = linkedSignal<HousingLocationInfo[], HousingLocationData[]>(
-    {
-      source: this.locationService.getAllLocation(),
-      computation: (newDependencyHouseLocationInfoArray, previousValue) => {
-        const prevLocationViewModels = (previousValue?.value as HousingLocationData[]) ?? []
+  locationServiceData = linkedSignal<HousingLocationInfo[], HousingLocationData[]>({
+    source: this.locationService.getAllLocation(),
+    computation: (newDependencyHouseLocationInfoArray, previousValue) => {
+      const prevLocationViewModels = (previousValue?.value as HousingLocationData[]) ?? [];
 
-        const viewLocationsModels = newDependencyHouseLocationInfoArray.map(location => {
+      const viewLocationsModels = newDependencyHouseLocationInfoArray.map((location) => {
+        // Check if the location is already in the selected state
+        // We can figure that out using the previous location models and use that models selected values, and set it to the new model we are creating
+        const matchedModel = prevLocationViewModels.find(
+          (prevLocation) => prevLocation.id === location.id,
+        );
 
-          // Check if the location is already in the selected state
-          // We can figure that out using the previous location models and use that models selected values, and set it to the new model we are creating
-          const matchedModel = prevLocationViewModels.find(prevLocation => prevLocation.id === location.id)
+        return { ...location, selected: matchedModel?.selected ?? false };
+      });
 
-
-          return { ...location, selected: matchedModel?.selected ?? false }
-
-        })
-
-        return viewLocationsModels
-      }
-    }
-  )
+      return viewLocationsModels;
+    },
+  });
 
   visibleItems = computed(() => {
     const search = this.searchResults();
@@ -98,27 +91,30 @@ export class Home {
 
   selectedCount = computed(
     () =>
-      this.locationServiceData().filter(
-        (x) => x.selected && !this.locationService.isDeleted(x.id)
-      ).length
+      this.locationServiceData().filter((x) => x.selected && !this.locationService.isDeleted(x.id))
+        .length,
   );
   deletedCount = computed(() => this.locationService.getDeletedIds().length);
 
   handleSelectionChange(event: { id: number; selected: boolean }) {
-    this.locationServiceData.update(list =>
-      list.map(x => x.id === event.id && !this.locationService.isDeleted(x.id) ? { ...x, selected: event.selected } : x)
+    this.locationServiceData.update((list) =>
+      list.map((x) =>
+        x.id === event.id && !this.locationService.isDeleted(x.id)
+          ? { ...x, selected: event.selected }
+          : x,
+      ),
     );
   }
 
   deleteSelected() {
     const selectedIds = this.locationServiceData()
-      .filter(x => x.selected)
-      .map(x => x.id);
-    
+      .filter((x) => x.selected)
+      .map((x) => x.id);
+
     this.locationService.deleteItems(selectedIds);
-    
-    this.locationServiceData.update(list =>
-      list.map(x => selectedIds.includes(x.id) ? { ...x, selected: false } : x)
+
+    this.locationServiceData.update((list) =>
+      list.map((x) => (selectedIds.includes(x.id) ? { ...x, selected: false } : x)),
     );
   }
 
@@ -127,14 +123,14 @@ export class Home {
   }
 
   handleLocationClick(housingLocationInfo: HousingLocationInfo) {
-    console.log(housingLocationInfo)
-    if(this.mode() === "normal") {
-      this.router.navigate(['details', housingLocationInfo.id])
-      const viewModels = this.locationServiceData().map(vm => {
+    console.log(housingLocationInfo);
+    if (this.mode() === 'normal') {
+      this.router.navigate(['details', housingLocationInfo.id]);
+      const viewModels = this.locationServiceData().map((vm) => {
         const newVm = { ...vm };
         newVm.selected = false;
         return newVm;
-      })
+      });
       this.locationServiceData.set(viewModels);
     } else {
       // const viewModels = [...this.locationServiceData()];
@@ -144,26 +140,25 @@ export class Home {
       // }
 
       const viewModel = this.locationServiceData().map((vm) => {
-        if(vm.id === housingLocationInfo.id) {
-          const newVm = { ...vm};
+        if (vm.id === housingLocationInfo.id) {
+          const newVm = { ...vm };
           newVm.selected = !newVm.selected;
           return newVm;
         }
-        return vm
-      })
+        return vm;
+      });
     }
   }
 
   handleCheckbox() {
-    this.mode.update(prev => prev === "normal" ? 'edit' : "normal")
+    this.mode.update((prev) => (prev === 'normal' ? 'edit' : 'normal'));
 
-    if(this.mode() === 'normal'){
-      this.locationServiceData.update(list => list.map(x => ({ ...x, selected: false })));
+    if (this.mode() === 'normal') {
+      this.locationServiceData.update((list) => list.map((x) => ({ ...x, selected: false })));
     }
   }
 
   addHousingLocation() {
-
     // console.log("Starting to add housing location...")
 
     // const data: HousingLocationInfo = {
@@ -179,7 +174,6 @@ export class Home {
 
     // this.locationService.addLocation(data)
 
-    this.router.navigate(['edit'], { relativeTo: this.activatedRoute })
+    this.router.navigate(['edit'], { relativeTo: this.activatedRoute });
   }
-
 }

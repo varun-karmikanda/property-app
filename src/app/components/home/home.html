@@ -2,9 +2,6 @@
   <div class="toolbar">
     <form>
       <input type="text" placeholder="Search by name, city, or state" [formControl]="searchControl" />
-      @if (loading()) {
-      <span>Loading...</span>
-    }
       <button class="primary" type="button">Search</button>
     </form>
     <div class="toolbar-buttons">
