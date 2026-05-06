@@ -7,6 +7,7 @@ import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { debounceTime, distinctUntilChanged, filter, map, switchMap, tap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { CardLayout } from "../card-layout/card-layout";
 
 type HousingLocationData = HousingLocationInfo & {
   selected: boolean;
@@ -14,7 +15,7 @@ type HousingLocationData = HousingLocationInfo & {
 
 @Component({
   selector: 'app-home',
-  imports: [HousingLocation, RouterOutlet, ReactiveFormsModule],
+  imports: [HousingLocation, RouterOutlet, ReactiveFormsModule, CardLayout],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })

@@ -1,0 +1,12 @@
+.card-layout {
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  padding: 1rem;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.card-layout:hover {
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.16);
+  transform: translateY(-1px);
+}

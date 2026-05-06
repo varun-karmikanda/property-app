@@ -44,12 +44,14 @@
 </section>
 <section class="results">
   @for (housingLocation of visibleItems(); track housingLocation.id) {
-    <app-housing-location 
-      [housingLocation]="housingLocation" 
-      [isSelected]="housingLocation.selected"
-      (onLocationClick)="handleLocationClick($event)" 
-      [isEditMode]="mode() === 'edit'"
-      (selectedLocation)="handleSelectionChange($event)" />
+    <app-card-layout>
+      <app-housing-location
+        [housingLocation]="housingLocation" 
+        [isSelected]="housingLocation.selected"
+        (onLocationClick)="handleLocationClick($event)" 
+        [isEditMode]="mode() === 'edit'"
+        (selectedLocation)="handleSelectionChange($event)" />
+    </app-card-layout>
   } @empty {
     <p>No locations found.</p>
   }
