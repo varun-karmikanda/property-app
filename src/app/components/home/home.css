@@ -123,12 +123,108 @@ button.secondary:disabled {
 
 /* Results Grid */
 .results {
+  display: block;
+  margin-top: 50px;
+}
+
+.cards-grid {
   display: grid;
   column-gap: 14px;
   row-gap: 14px;
   grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-  margin-top: 50px;
-  justify-content: space-around;
+}
+
+.table-caption {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+}
+
+.row-selected {
+  background-color: #ecfdf3;
+}
+
+.locations-table .p-datatable-tbody > tr > td,
+.locations-table .p-datatable-thead > tr > th,
+.locations-table .p-datatable-tfoot > tr > td {
+  vertical-align: middle;
+}
+
+.locations-table .p-datatable-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  table-layout: fixed;
+  border: 1px solid #dbe3f0;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.locations-table .p-datatable-thead > tr > th,
+.locations-table .p-datatable-tbody > tr > td,
+.locations-table .p-datatable-tfoot > tr > td {
+  border-bottom: 1px solid #dbe3f0;
+  padding: 1rem 1.25rem;
+}
+
+.locations-table .p-datatable-thead > tr > th {
+  background: #f8fbff;
+  font-weight: 700;
+  color: #344054;
+}
+
+.locations-table .p-datatable-tbody > tr {
+  height: 120px;
+}
+
+.locations-table .image-cell {
+  width: 120px;
+}
+
+.listing-thumb {
+  width: 96px;
+  height: 72px;
+  object-fit: cover;
+  display: block;
+  border-radius: 8px;
+}
+
+.amenities-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  align-items: flex-start;
+}
+
+.amenity-line {
+  display: block;
+}
+
+.clickable-row {
+  cursor: pointer;
+}
+
+.clickable-row:hover,
+.clickable-row:focus-visible {
+  background-color: #f3f7ff;
+  outline: 2px solid #605dec;
+  outline-offset: -2px;
+}
+
+.feature-pill {
+  display: inline-block;
+  border-radius: 999px;
+  background: #eaf7ef;
+  color: #14532d;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.15rem 0.65rem;
+}
+
+.feature-muted {
+  color: #6b7280;
+  font-size: 0.8rem;
 }
 
 /* Visual Feedback when in Edit Mode */
@@ -153,12 +249,16 @@ button.secondary:disabled {
   }
 
   .results {
+    margin-top: 24px;
+  }
+
+  .cards-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (max-width: 499px) {
-  .results {
+  .cards-grid {
     grid-template-columns: 1fr;
   }
 }

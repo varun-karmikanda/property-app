@@ -53,7 +53,7 @@ export class LocationDetails {
     if (housingLocationInfo && housingLocationInfo.id >= 0) {
       const prevId = housingLocationInfo.id - 1;
       if (prevId >= 0) {
-        this.router.navigate(['details', prevId]);
+        this.router.navigate(['/details', prevId]);
       }
     }
   }
@@ -63,7 +63,7 @@ export class LocationDetails {
     if (housingLocationInfo) {
       const nextId = housingLocationInfo.id + 1;
       if (nextId < this.locationService.getAllLocation().length) {
-        this.router.navigate(['details', nextId]);
+        this.router.navigate(['/details', nextId]);
       }
     }
   }

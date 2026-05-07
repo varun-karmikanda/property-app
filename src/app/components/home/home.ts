@@ -1,13 +1,27 @@
-import { Component, computed, DestroyRef, inject, linkedSignal, signal } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
+import { BreakpointObserver } from '@angular/cdk/layout';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  linkedSignal,
+  signal,
+} from '@angular/core';
 import { HousingLocation } from '../housing-location/housing-location';
 import { HousingLocationInfo } from '../../models/housing-location-info';
 import { BASE_URL, LocationService } from '../../services/location-service';
-import { MockLocationService } from '../../services/mock-location.service';
 import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { debounceTime, distinctUntilChanged, filter, map, switchMap, tap } from 'rxjs';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { CardLayout } from "../card-layout/card-layout";
+import { TableModule } from 'primeng/table';
+import { ButtonModule } from 'primeng/button';
+import { TagModule } from 'primeng/tag';
+import { RatingModule } from 'primeng/rating';
+import { FormsModule } from '@angular/forms';
 
 type HousingLocationData = HousingLocationInfo & {
   selected: boolean;
@@ -15,13 +29,26 @@ type HousingLocationData = HousingLocationInfo & {
 
 @Component({
   selector: 'app-home',
-  imports: [HousingLocation, RouterOutlet, ReactiveFormsModule, CardLayout],
+  imports: [
+    HousingLocation,
+    RouterOutlet,
+    ReactiveFormsModule,
+    CardLayout,
+    TableModule,
+    ButtonModule,
+    TagModule,
+    RatingModule,
+    FormsModule,
+    NgTemplateOutlet,
+  ],
   templateUrl: './home.html',
   styleUrl: './home.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Home {
   private readonly destroyRef = inject(DestroyRef);
   private readonly locationService = inject(LocationService);
+  private readonly breakpointObserver = inject(BreakpointObserver);
 
   readonly searchControl = new FormControl('', { nonNullable: true });
   readonly searchResults = signal<HousingLocationData[] | null>(null);
@@ -31,6 +58,15 @@ export class Home {
   readonly baseUrl = inject(BASE_URL);
 
   readonly mode = signal<'normal' | 'edit'>('normal');
+  readonly isDesktop = toSignal(
+    this.breakpointObserver.observe('(min-width: 1024px)').pipe(map((state) => state.matches)),
+    { initialValue: false },
+  );
+
+  refreshLocations() {
+    // Force a new array reference so linkedSignal consumers refresh
+    this.locationServiceData.update((list) => [...list]);
+  }
 
   modeStatus = computed(() => {
     return this.mode() === 'normal' ? 'NORMAL' : 'EDIT';
@@ -107,6 +143,15 @@ export class Home {
     );
   }
 
+  onDesktopSelectionChange(event: Event, id: number) {
+    const target = event.target;
+    if (!(target instanceof HTMLInputElement)) {
+      return;
+    }
+
+    this.handleSelectionChange({ id, selected: target.checked });
+  }
+
   deleteSelected() {
     const selectedIds = this.locationServiceData()
       .filter((x) => x.selected)
@@ -126,7 +171,7 @@ export class Home {
   handleLocationClick(housingLocationInfo: HousingLocationInfo) {
     console.log(housingLocationInfo);
     if (this.mode() === 'normal') {
-      this.router.navigate(['details', housingLocationInfo.id]);
+      this.router.navigate(['/details', housingLocationInfo.id]);
       const viewModels = this.locationServiceData().map((vm) => {
         const newVm = { ...vm };
         newVm.selected = false;
@@ -149,6 +194,10 @@ export class Home {
         return vm;
       });
     }
+  }
+
+  openLocationDetails(housingLocationInfo: HousingLocationInfo) {
+    this.router.navigate(['/details', housingLocationInfo.id]);
   }
 
   handleCheckbox() {
