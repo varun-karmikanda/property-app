@@ -63,11 +63,6 @@ export class Home {
     { initialValue: false },
   );
 
-  refreshLocations() {
-    // Force a new array reference so linkedSignal consumers refresh
-    this.locationServiceData.update((list) => [...list]);
-  }
-
   modeStatus = computed(() => {
     return this.mode() === 'normal' ? 'NORMAL' : 'EDIT';
   });
@@ -171,7 +166,7 @@ export class Home {
   handleLocationClick(housingLocationInfo: HousingLocationInfo) {
     console.log(housingLocationInfo);
     if (this.mode() === 'normal') {
-      this.router.navigate(['/details', housingLocationInfo.id]);
+      this.router.navigate(['details', housingLocationInfo.id]);
       const viewModels = this.locationServiceData().map((vm) => {
         const newVm = { ...vm };
         newVm.selected = false;
@@ -194,10 +189,6 @@ export class Home {
         return vm;
       });
     }
-  }
-
-  openLocationDetails(housingLocationInfo: HousingLocationInfo) {
-    this.router.navigate(['/details', housingLocationInfo.id]);
   }
 
   handleCheckbox() {

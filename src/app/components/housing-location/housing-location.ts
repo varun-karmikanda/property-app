@@ -3,10 +3,11 @@ import { HousingLocationInfo } from '../../models/housing-location-info';
 import { BASE_URL, LocationService } from '../../services/location-service';
 import { MockLocationService } from '../../services/mock-location.service';
 import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
+import { CardLayout } from "../card-layout/card-layout";
 
 @Component({
   selector: 'app-housing-location',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, CardLayout],
   templateUrl: './housing-location.html',
   styleUrl: './housing-location.css',
   providers: [{ provide: BASE_URL, useValue: "hehe hehe heee"}]

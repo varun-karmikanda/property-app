@@ -50,16 +50,16 @@
   <!-- Templates for table and cards. We render one via ngTemplateOutlet based on isDesktop() -->
   <ng-template #tableTpl let-items>
     <app-card-layout>
-      <p-table
-        [value]="items"
-        [tableStyle]="{ 'min-width': '60rem' }"
-        styleClass="locations-table"
-        dataKey="id"
-      >
+      <div class="table-content">
+        <p-table
+          [value]="items"
+          [tableStyle]="{ 'min-width': '60rem' }"
+          styleClass="locations-table"
+          dataKey="id"
+        >
         <ng-template #caption>
           <div style="display:flex;align-items:center;justify-content:space-between;">
             <span class="text-xl font-bold">Housing Locations</span>
-            <p-button icon="pi pi-refresh" (click)="refreshLocations()" styleClass="p-button-sm"></p-button>
           </div>
         </ng-template>
 
@@ -108,34 +108,25 @@
           </tr>
         </ng-template>
       </p-table>
+      </div>
     </app-card-layout>
   </ng-template>
 
   <ng-template #cardsTpl let-items>
     <div class="cards-grid">
       @for (housingLocation of items; track housingLocation.id) {
-        <app-card-layout>
-          <app-housing-location
-            [housingLocation]="housingLocation"
-            [isSelected]="housingLocation.selected"
-            (onLocationClick)="handleLocationClick($event)"
-            [isEditMode]="mode() === 'edit'"
-            (selectedLocation)="handleSelectionChange($event)"
-          />
-        </app-card-layout>
+        <app-housing-location
+          [housingLocation]="housingLocation"
+          [isSelected]="housingLocation.selected"
+          (onLocationClick)="handleLocationClick($event)"
+          [isEditMode]="mode() === 'edit'"
+          (selectedLocation)="handleSelectionChange($event)"
+        />        
       }
     </div>
   </ng-template>
 
   <ng-container [ngTemplateOutlet]="isDesktop() ? tableTpl : cardsTpl" [ngTemplateOutletContext]="{ $implicit: visibleItems() }"></ng-container>
 </section>
-
-<ng-template #featureFlag let-enabled="enabled" let-label="label">
-  @if (enabled) {
-    <span class="feature-pill">{{ label }}</span>
-  } @else {
-    <span class="feature-muted">No</span>
-  }
-</ng-template>
 
 <router-outlet></router-outlet>
